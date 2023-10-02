@@ -21,7 +21,7 @@ export default function App() {
       // Updating 'notes'-key inside of LocalStorage by stringifying 'notes'-array
       // in order to save it to localStorage
       localStorage.setItem("notes", JSON.stringify(notes))
-  }, [notes]) // dependent on 'notes': runs every time 'notes'- array changes
+  }, [notes]) // dependent on 'notes': function runs every time 'notes'- array changes
 
     function createNewNote() {
         const newNote = {
@@ -33,12 +33,38 @@ export default function App() {
     }
 
     function updateNote(text) {
-        setNotes(oldNotes => oldNotes.map(oldNote => {
-            return oldNote.id === currentNoteId
-                ? { ...oldNote, body: text }
-                : oldNote
-        }))
-    }
+      // Try to rearrange the most recently-modified
+      // not to be at the top
+      setNotes(oldNotes => {
+          // Create a new empty array
+          const newArr = []
+
+          // Loop over the original array
+            for(let i = 0; i < oldNotes.length; i++) {
+              const oldNote = oldNotes[i]
+              // if the id matches
+              if(oldNote.id === currentNoteId) {
+                // put the updated note at the
+                // beginning of the new array
+                newArr.unshift({ ...oldNote, body: text })
+                // else
+              } else {
+                // push the old note to the end
+                // of the new array
+                newArr.push(oldNote)
+              }
+            }
+            // return the new array
+            return newArr
+      })
+
+      // This does not rearrange the notes
+      // setNotes(oldNotes => oldNotes.map(oldNote => {
+      //     return oldNote.id === currentNoteId
+      //         ? { ...oldNote, body: text }
+      //         : oldNote
+      // }))
+  }
 
     function findCurrentNote() {
         return notes.find(note => {
