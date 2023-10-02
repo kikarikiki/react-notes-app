@@ -5,19 +5,22 @@ import { data } from "../data"
 import Split from "react-split"
 import {nanoid} from "nanoid"
 
-/**
- * Challenge: Spend 10-20+ minutes reading through the code
- * and trying to understand how it's currently working. Spend
- * as much time as you need to feel confident that you
- * understand the existing code (although you don't need
- * to fully understand everything to move on)
- */
-
 export default function App() {
-    const [notes, setNotes] = React.useState([])
+
+  const [notes, setNotes] = React.useState(
+        // Access LocalStorage to preload App with prev Notes of LocalStorage
+        JSON.parse(localStorage.getItem("notes")) || []
+    )
     const [currentNoteId, setCurrentNoteId] = React.useState(
         (notes[0] && notes[0].id) || ""
     )
+
+    // Side Effect to connect to LocalStorage
+    React.useEffect(() => {
+      // Updating 'notes'-key inside of LocalStorage by stringifying 'notes'-array
+      // in order to save it to localStorage
+      localStorage.setItem("notes", JSON.stringify(notes))
+  }, [notes]) // dependent on 'notes': runs every time 'notes'- array changes
 
     function createNewNote() {
         const newNote = {
