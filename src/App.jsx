@@ -7,9 +7,10 @@ import {nanoid} from "nanoid"
 
 export default function App() {
 
-  const [notes, setNotes] = React.useState(
+    const [notes, setNotes] = React.useState(
+        // Lazy State Inititialization
         // Access LocalStorage to preload App with prev Notes of LocalStorage
-        JSON.parse(localStorage.getItem("notes")) || []
+        () => JSON.parse(localStorage.getItem("notes")) || []
     )
     const [currentNoteId, setCurrentNoteId] = React.useState(
         (notes[0] && notes[0].id) || ""
