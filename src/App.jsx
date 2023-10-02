@@ -66,6 +66,13 @@ export default function App() {
       // }))
   }
 
+    function deleteNote(event, noteId) {
+        // Prevents further propagation of the current event to the parent (here SidebarDiv)
+        event.stopPropagation()
+        // Returns an Arr that has filtered out the clicked item
+        setNotes(oldNotes => oldNotes.filter(note => note.id !== noteId))
+    }
+
     function findCurrentNote() {
         return notes.find(note => {
             return note.id === currentNoteId
@@ -87,6 +94,7 @@ export default function App() {
                     currentNote={findCurrentNote()}
                     setCurrentNoteId={setCurrentNoteId}
                     newNote={createNewNote}
+                    deleteNote={deleteNote}
                 />
                 {
                     currentNoteId &&
