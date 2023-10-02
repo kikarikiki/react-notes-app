@@ -33,8 +33,8 @@ export default function App() {
     }
 
     function updateNote(text) {
-      // Try to rearrange the most recently-modified
-      // not to be at the top
+      // Rearrange the most recently-modified
+      // note to be at the top
       setNotes(oldNotes => {
           // Create a new empty array
           const newArr = []
