@@ -14,6 +14,17 @@ export default function App() {
 
     const currentNote = notes.find(note => note.id === currentNoteId) || notes[0]
 
+    // DateNow
+    const formattedDateNow = new Intl.DateTimeFormat('de-DE', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    }).format(new Date());
+
 
     // SIDE EFFECT TO CONNECT TO FIRESTORE
     React.useEffect(() => {
@@ -39,9 +50,12 @@ export default function App() {
 
     // CREATE NEW NOTE
     async function createNewNote() {
+
       const newNote = {
-          body: "# Type your markdown note's title here"
+          body: "# Type your markdown note's title here",
           // database manages id, so we dont need to create a prop for it
+          createdAt: formattedDateNow,
+          updatedAt: ""
       }
       // Push newNote to Firestore with addDoc
       const newNoteRef = await addDoc(notesCollection, newNote)
@@ -55,7 +69,8 @@ export default function App() {
       const docRef = doc(db, "notes", currentNoteId)
       // Pushing update/changes (currentNoteId) to Firestore
       // merge: true -> merge modified object into exsiting object/doc in firestore
-      await setDoc(docRef, { body: text }, { merge: true })
+      console.log(docRef)
+      await setDoc(docRef, { body: text, updatedAt: formattedDateNow }, { merge: true })
   }
 
 
