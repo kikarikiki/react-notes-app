@@ -14,16 +14,8 @@ export default function App() {
 
     const currentNote = notes.find(note => note.id === currentNoteId) || notes[0]
 
-    // DateNow
-    const formattedDateNow = new Intl.DateTimeFormat('de-DE', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZoneName: 'short'
-    }).format(new Date());
+    // Sort notes according to newestUpdated
+    const sortedNotes = notes.sort((a, b) => b.updatedAt - a.updatedAt)
 
 
     // SIDE EFFECT TO CONNECT TO FIRESTORE
@@ -54,8 +46,8 @@ export default function App() {
       const newNote = {
           body: "# Type your markdown note's title here",
           // database manages id, so we dont need to create a prop for it
-          createdAt: formattedDateNow,
-          updatedAt: ""
+          createdAt: Date.now(),
+          updatedAt: Date.now()
       }
       // Push newNote to Firestore with addDoc
       const newNoteRef = await addDoc(notesCollection, newNote)
@@ -69,8 +61,7 @@ export default function App() {
       const docRef = doc(db, "notes", currentNoteId)
       // Pushing update/changes (currentNoteId) to Firestore
       // merge: true -> merge modified object into exsiting object/doc in firestore
-      console.log(docRef)
-      await setDoc(docRef, { body: text, updatedAt: formattedDateNow }, { merge: true })
+      await setDoc(docRef, { body: text, updatedAt: Date.now() }, { merge: true })
   }
 
 
@@ -92,7 +83,7 @@ export default function App() {
                 className="split"
             >
                 <Sidebar
-                    notes={notes}
+                    notes={sortedNotes}
                     currentNote={currentNote}
                     setCurrentNoteId={setCurrentNoteId}
                     newNote={createNewNote}
