@@ -53,6 +53,8 @@ export default function App() {
     // UPDATE NOTE
     async function updateNote(text) {
       const docRef = doc(db, "notes", currentNoteId)
+      // Pushing update/changes (currentNoteId) to Firestore
+      // merge: true -> merge modified object into exsiting object/doc in firestore
       await setDoc(docRef, { body: text }, { merge: true })
   }
 
