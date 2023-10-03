@@ -2,76 +2,65 @@ import React from "react"
 import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 import Split from "react-split"
-import {nanoid} from "nanoid"
+// Listen to changes in the firestore database and act accordingly in my localCode
+import { onSnapshot, addDoc, doc, deleteDoc, setDoc } from "firebase/firestore"
+import { notesCollection, db } from "./firebase"
 
 export default function App() {
 
-    const [notes, setNotes] = React.useState(
-        // 1. Lazy State Inititialization
-        // 2. Access LocalStorage to preload App with prev Notes of LocalStorage
-        () => JSON.parse(localStorage.getItem("notes")) || []
-    )
-    const [currentNoteId, setCurrentNoteId] = React.useState(
-      (notes[0] && notes[0].id) || ""
-    )
+    const [notes, setNotes] = React.useState([])
+
+    const [currentNoteId, setCurrentNoteId] = React.useState("")
 
     const currentNote = notes.find(note => note.id === currentNoteId) || notes[0]
 
 
-    // Side Effect to connect to LocalStorage
+    // SIDE EFFECT TO CONNECT TO FIRESTORE
     React.useEffect(() => {
-      // Updating 'notes'-key inside of LocalStorage by stringifying 'notes'-array
-      // in order to save it to localStorage
-      localStorage.setItem("notes", JSON.stringify(notes))
-  }, [notes]) // dependent on 'notes': function runs every time 'notes'- array changes
+        const unsubscribe = onSnapshot(notesCollection, function(snapshot) {
+            // Sync up our local notes array with the snapshot data
+            // Getting snapshot-dataObjects from firestore and rearanging it so that it can be used
+            // for this app
+            const notesArr = snapshot.docs.map(doc => ({
+              // for every doc return an object that has all data from docs
+              ...doc.data(),
+              // id is not part of the data of the document.
+              // document has its own id property that i can access with doc.id
+              id: doc.id
+          }))
+          // Call stateFunction and pass notesArr-Array
+          setNotes(notesArr)
+        })
+        return unsubscribe
+    }, [])
 
-    function createNewNote() {
-        const newNote = {
-            id: nanoid(),
-            body: "# Type your markdown note's title here"
-        }
-        setNotes(prevNotes => [newNote, ...prevNotes])
-        setCurrentNoteId(newNote.id)
+
+
+
+    // CREATE NEW NOTE
+    async function createNewNote() {
+      const newNote = {
+          body: "# Type your markdown note's title here"
+          // database manages id, so we dont need to create a prop for it
+      }
+      // Push newNote to Firestore with addDoc
+      const newNoteRef = await addDoc(notesCollection, newNote)
+      // set Id to newNoteRef-Referenz.id property
+      setCurrentNoteId(newNoteRef.id)
     }
 
-    function updateNote(text) {
-      // Rearrange the most recently-modified note to be at the top
-      setNotes(oldNotes => {
-          // Create a new empty array
-          const newArr = []
 
-          // Loop over the original array
-            for(let i = 0; i < oldNotes.length; i++) {
-              const oldNote = oldNotes[i]
-              // if the id matches
-              if(oldNote.id === currentNoteId) {
-                // put the updated note at the
-                // beginning of the new array
-                newArr.unshift({ ...oldNote, body: text })
-                // else
-              } else {
-                // push the old note to the end
-                // of the new array
-                newArr.push(oldNote)
-              }
-            }
-            // return the new array
-            return newArr
-      })
-
-      // This does not rearrange the notes
-      // setNotes(oldNotes => oldNotes.map(oldNote => {
-      //     return oldNote.id === currentNoteId
-      //         ? { ...oldNote, body: text }
-      //         : oldNote
-      // }))
+    // UPDATE NOTE
+    async function updateNote(text) {
+      const docRef = doc(db, "notes", currentNoteId)
+      await setDoc(docRef, { body: text }, { merge: true })
   }
 
-    function deleteNote(event, noteId) {
-        // Prevents further propagation of the current event to the parent (here SidebarDiv)
-        event.stopPropagation()
-        // Returns an Arr that has filtered out the clicked item
-        setNotes(oldNotes => oldNotes.filter(note => note.id !== noteId))
+
+    // DELETE NOTE
+    async function deleteNote(noteId) {
+        const docRef = doc(db, "notes", noteId)
+        await deleteDoc(docRef)
     }
 
 
@@ -92,14 +81,10 @@ export default function App() {
                     newNote={createNewNote}
                     deleteNote={deleteNote}
                 />
-                {
-                    currentNoteId &&
-                    notes.length > 0 &&
-                    <Editor
-                        currentNote={currentNote}
-                        updateNote={updateNote}
-                    />
-                }
+                <Editor
+                    currentNote={currentNote}
+                    updateNote={updateNote}
+                />
             </Split>
             :
             <div className="no-notes">
