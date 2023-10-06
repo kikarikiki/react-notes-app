@@ -12,11 +12,16 @@ export default function App() {
 
     const [currentNoteId, setCurrentNoteId] = React.useState("")
 
+    // Helper Function
+    // assigns the first note in the notes array (retrieved with notes[0]) to currentNote
     const currentNote = notes.find(note => note.id === currentNoteId) || notes[0]
 
     // Sort notes according to newestUpdated
     const sortedNotes = notes.sort((a, b) => b.updatedAt - a.updatedAt)
 
+    const [tempNoteText, setTempNoteText] = React.useState("")
+
+    /////////////////////////////
 
     // SIDE EFFECT TO CONNECT TO FIRESTORE
     React.useEffect(() => {
@@ -36,6 +41,40 @@ export default function App() {
         })
         return unsubscribe
     }, [])
+
+    /////////////////////////////
+
+    React.useEffect(() => {
+      if (!currentNoteId) {
+          setCurrentNoteId(notes[0]?.id)
+      }
+  }, [notes])
+
+    /////////////////////////////
+
+    React.useEffect(() => {
+        currentNote && setTempNoteText(currentNote.body)
+    }, [currentNote])
+
+    /////////////////////////////
+
+    // Any time 'tempNoteText changes' (every single key stroke), this-useEffect will run
+    React.useEffect(() => {
+      // Debouncing happens with timeOutFunction
+      // will wait 500ms before updating 'tempNoteText' in Firestore
+      const timeoutId = setTimeout(() => {
+        // if tempNoteText is not equal to currentNote.body
+        if (tempNoteText !== currentNote.body) {
+          // ... will run updateNote()
+          // (this way selecting the next note isn't goint to trigger the update),
+          // bc currentNote.body is equal tempNoteText
+          updateNote(tempNoteText)
+        }
+      }, 500)
+       // cleaning (canceling setTimeout()) happens after 'tempNoteText' was updated
+       // (useEffectFunction will run again)
+      return () => clearTimeout(timeoutId)
+  }, [tempNoteText])
 
 
 
@@ -90,8 +129,8 @@ export default function App() {
                     deleteNote={deleteNote}
                 />
                 <Editor
-                    currentNote={currentNote}
-                    updateNote={updateNote}
+                    tempNoteText={tempNoteText}
+                    setTempNoteText={setTempNoteText}
                 />
             </Split>
             :
