@@ -1,8 +1,3 @@
-# React + Vite
+# Markdown Notes-React-App (+ Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![Bildschirmfoto 2023-10-06 um 13 52 09](https://github.com/kikarikiki/react-notes-app/assets/68593523/880ec3eb-dc32-411c-bee5-28409842ee3b)
